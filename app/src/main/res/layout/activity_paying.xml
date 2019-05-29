@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.constraint.Guideline
+        android:id="@+id/paying_guideline_025"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.06" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/paying_guideline_075"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.86" />
+
+    <EditText
+        android:id="@+id/pay_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@null"
+        android:clickable="false"
+        android:focusable="false"
+        android:inputType="none"
+        android:text="@string/pay_text"
+        app:layout_constraintBottom_toTopOf="@+id/paying_guideline_025"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/paying_guideline_025" />
+
+    <EditText
+        android:id="@+id/minutesText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@null"
+        android:clickable="false"
+        android:focusable="false"
+        android:inputType="none"
+        app:layout_constraintBottom_toTopOf="@+id/paying_guideline_025"
+        app:layout_constraintLeft_toRightOf="@id/pay_text"
+        app:layout_constraintTop_toTopOf="@id/paying_guideline_025" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@null"
+        android:clickable="false"
+        android:focusable="false"
+        android:inputType="none"
+        android:text="@string/mins_text"
+        app:layout_constraintBottom_toTopOf="@+id/paying_guideline_025"
+        app:layout_constraintLeft_toRightOf="@id/minutesText"
+        app:layout_constraintTop_toTopOf="@id/paying_guideline_025" />
+
+    <SeekBar
+        android:id="@+id/minutesBar"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:max="10"
+        android:progress="1"
+        android:scrollbarAlwaysDrawHorizontalTrack="false"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/minutesText" />
+
+    <Button
+        android:id="@+id/pay_button"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/pay_button_text"
+        app:layout_constraintBottom_toTopOf="@id/paying_guideline_075"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/paying_guideline_075" />
+
+    <EditText
+        android:id="@+id/pay_info_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@null"
+        android:clickable="false"
+        android:focusable="false"
+        android:inputType="none"
+        android:text=""
+        app:layout_constraintBottom_toTopOf="@+id/paying_guideline_075"
+        app:layout_constraintEnd_toStartOf="@+id/pay_button"
+        app:layout_constraintRight_toLeftOf="@id/pay_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/paying_guideline_075" />
+
+    <EditText
+        android:id="@+id/washInfoText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:background="@null"
+        android:clickable="false"
+        android:focusable="false"
+        android:inputType="none"
+        android:text=""
+        app:layout_constraintBottom_toTopOf="@+id/pay_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/minutesBar" />
+
+</android.support.constraint.ConstraintLayout>

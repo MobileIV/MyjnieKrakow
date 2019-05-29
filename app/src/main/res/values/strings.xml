@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">MyjnieKrakow</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="permission_required_toast">Location permission required</string>
+    <string name="title_activity_wash">WashActivity</string>
+    <string name="base_api_url">https://lovely-warthog-84.localtunnel.me</string>
+    <string name="wash_object_key">wash_object</string>
+    <string name="komentarz_hint">Komentarz</string>
+    <string name="washes_list_key">washes_list</string>
+    <string name="ratings_list_key">ratings_list</string>
+    <string name="sort">Sort</string>
+    <string name="comment_hint">Napisz koment ziomq</string>
+    <string name="is_sorted_key">is_sorted</string>
+    <string name="is_sorted_by_rate_key">sorted_by_rate</string>
+    <string name="is_sorted_by_date_key">sorted_by_date</string>
+    <string name="sort_by_date">sort by date</string>
+    <string name="sort_by_rate">sort by rate</string>
+    <string name="no_comment">Brak komentarza</string>
+    <string name="on_successful_comment">Komentarz dodany</string>
+    <string name="on_comment_failure">Nie udało się dodać komentarza</string>
+    <string name="on_post_failure">wiadomo co</string>
+    <string name="post_comment">post_comment</string>
+    <string name="rating_array_key">rating_array</string>
+    <string name="stars_count_key">stars_count_key</string>
+    <string name="comment_key">comment_key</string>
+    <string name="receiver_key">receiver</string>
+    <string name="action_key">action_key</string>
+    <string name="post_comment_action">post_comment</string>
+    <string name="get_ratings_action">get_ratings</string>
+    <string name="wash_id_key">wash_id</string>
+    <string name="get_wash_list_action">get_wash_list</string>
+    <string name="camera_permission_required_toast">Camera permission required</string>
+    <string name="cost_per_min_key">cost_per_min_key</string>
+    <string name="spot_id_key">spot_id_key</string>
+    <string name="currency_key">currency_key</string>
+    <string name="pay_text">Wybrano</string>
+    <string name="mins_text">minut</string>
+    <string name="scanner_status_text">Zeskanuj kod qr na myjnii by rozpocząć płatność</string>
+    <string name="pay_button_text">Zapłać</string>
+    <string name="wash_address_key">wash_address_key</string>
+
+</resources>
