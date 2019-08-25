@@ -3,18 +3,13 @@ package com.example.kostek.myjniekrakow;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Handler;
-import android.os.Parcelable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.kostek.myjniekrakow.constants.Status;
 import com.example.kostek.myjniekrakow.models.Wash;
-import com.example.kostek.myjniekrakow.services.MainService;
 import com.example.kostek.myjniekrakow.utils.BitmapCache;
-import com.example.kostek.myjniekrakow.utils.MyResultReceiver;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,36 +19,39 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.databinding.ObservableArrayMap;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 public class MapsActivity extends FragmentActivity
         implements
         ActivityCompat.OnRequestPermissionsResultCallback,
-        OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
-        MyResultReceiver.Receiver {
+        OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
 
     private GoogleMap mMap;
     private BitmapCache bitmapCache;
-    private ArrayList<Marker> markers;
-    private final Handler handler = new Handler();
+    private DatabaseReference dbRef;
     private FloatingActionButton openScanner;
     private boolean mPermissionDenied = false;
 
-    private List<Wash> washes;
+    private HashMap<String, Marker> markers;
+    private ObservableArrayMap<String, Wash> washes;
 
     private static final String LOG_TAG = MapsActivity.class.getSimpleName();
     private static final Integer ACTIVITY_REQUEST_CODE = 2;
     private static final Integer PERMISSION_CODE = 1;
 
-    public MyResultReceiver mReceiver;
-    private boolean isVisible;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,12 +61,12 @@ public class MapsActivity extends FragmentActivity
                 .findFragmentById(R.id.map);
 
         openScanner = findViewById(R.id.scanner);
-        isVisible = true;
 
-        markers = new ArrayList<>();
+        washes = new ObservableArrayMap<>();
+        washes.addOnMapChangedCallback(new MapListener());
+        markers = new HashMap<>();
         bitmapCache = new BitmapCache(20, this);
-        mReceiver = new MyResultReceiver(new Handler());
-        mReceiver.setReceiver(this);
+
         openScanner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -76,6 +74,10 @@ public class MapsActivity extends FragmentActivity
                 startActivityForResult(intent, ACTIVITY_REQUEST_CODE);
             }
         });
+
+        dbRef = FirebaseDatabase.getInstance().getReference("Washes");
+        dbRef.keepSynced(true);
+        dbRef.addChildEventListener(new ChildListener());
 
         mapFragment.getMapAsync(this);
     }
@@ -87,9 +89,6 @@ public class MapsActivity extends FragmentActivity
         LatLng cracow = new LatLng(50.0647, 19.9450);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(cracow, 12));
         enableLocation();
-        if (washes != null) {
-            populate_markers();
-        }
     }
 
     private void enableLocation() {
@@ -125,46 +124,19 @@ public class MapsActivity extends FragmentActivity
                     Toast.LENGTH_SHORT).show();
             this.finish();
         }
-        getWashes();
-        isVisible = true;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        isVisible = false;
-    }
-
-    private void getWashes() {
-        Intent intent = new Intent(this, MainService.class);
-        intent.putExtra(getString(R.string.receiver_key), mReceiver);
-        intent.putExtra(getString(R.string.action_key), getString(R.string.get_wash_list_action));
-        startService(intent);
-    }
-
-    private void populate_markers() {
-        markers.clear();
-        if (mMap == null)
-            return;
-        mMap.clear();
-        for (int i = 0; i < washes.size(); i++) {
-            Wash wash = washes.get(i);
-            Marker marker = mMap.addMarker(
-                    new MarkerOptions()
-                            .position(new LatLng(wash.lat, wash.lng))
-                            .title(wash.name)
-                            .icon(BitmapDescriptorFactory.fromBitmap(bitmapCache.get(wash.freeSpots().toString())))
-            );
-            marker.setTag(i);
-            markers.add(marker);
-        }
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
         Intent intent = new Intent(this, WashActivity.class);
-        int i = (int) marker.getTag();
-        intent.putExtra(getString(R.string.wash_object_key), washes.get(i));
+        String key = (String) marker.getTag();
+        intent.putExtra(getString(R.string.wash_object_key), washes.get(key));
+        intent.putExtra("dbKey", key);
         startActivity(intent);
         return true;
     }
@@ -172,30 +144,11 @@ public class MapsActivity extends FragmentActivity
     @Override
     protected void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
-        bundle.putParcelableArrayList(getString(R.string.washes_list_key), (ArrayList<? extends Parcelable>) washes);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle bundle) {
         super.onRestoreInstanceState(bundle);
-        washes =  bundle.getParcelableArrayList(getString(R.string.washes_list_key));
-    }
-
-    @Override
-    public void onReceiveResult(int resultCode, Bundle resultData) {
-        Log.d(LOG_TAG, "onReceiveResult: " + resultCode);
-        if (resultCode == Status.SUCCESSFUL) {
-            washes = resultData.getParcelableArrayList(getString(R.string.washes_list_key));
-            populate_markers();
-        }
-        if (isVisible) {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    getWashes();
-                }
-            }, 2000);
-        }
     }
 
     @Override
@@ -210,6 +163,86 @@ public class MapsActivity extends FragmentActivity
             Toast.makeText(
                     this, "Niepoprawny kod qr", Toast.LENGTH_SHORT
             ).show();
+        }
+    }
+
+    private class ChildListener implements ChildEventListener {
+
+        @Override
+        public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            Wash wash = dataSnapshot.getValue(Wash.class);
+            String key = dataSnapshot.getKey();
+            if (wash != null) {
+                washes.put(key, wash);
+            }
+            Log.d(LOG_TAG, "onChildAdded: " + wash.address + " " + wash.lat + " " + wash.lng);
+        }
+
+        @Override
+        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            Wash wash = dataSnapshot.getValue(Wash.class);
+            String key = dataSnapshot.getKey();
+            if (wash != null) {
+                washes.put(key, wash);
+            }
+            Log.d(LOG_TAG, "onChildAdded: " + wash.address + " " + wash.lat + " " + wash.lng);
+        }
+
+        @Override
+        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+            Wash wash = dataSnapshot.getValue(Wash.class);
+            String key = dataSnapshot.getKey();
+            if (wash != null) {
+                washes.remove(key);
+            }
+            Log.d(LOG_TAG, "onChildRemoved: " + wash.address);
+        }
+
+        @Override
+        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            Wash wash = dataSnapshot.getValue(Wash.class);
+            Log.d(LOG_TAG, "onChildMoved: " + wash.address);
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+            Log.e(LOG_TAG, databaseError.getMessage());
+        }
+    }
+
+    private class MapListener
+            extends ObservableArrayMap.OnMapChangedCallback<ObservableArrayMap
+            <String, Wash>, String, Wash> {
+        @Override
+        public void onMapChanged(ObservableArrayMap<String, Wash> sender, String key) {
+            Wash wash = sender.get(key);
+            if (wash == null) {
+                deleteMarker(key);
+            } else {
+                addMarker(key, wash);
+            }
+        }
+
+        private void addMarker(String key, Wash wash) {
+            Log.d(LOG_TAG, "addMarker: " + wash.address);
+            Marker marker = mMap.addMarker(
+                    new MarkerOptions()
+                            .position(new LatLng(wash.lat, wash.lng))
+                            .title(wash.name)
+                            .icon(BitmapDescriptorFactory
+                                    .fromBitmap(bitmapCache.get(wash.freeSpots().toString())))
+            );
+            marker.setTag(key);
+            marker.setVisible(true);
+            markers.put(key, marker);
+        }
+
+        private void deleteMarker(String key) {
+            Marker marker = markers.get(key);
+            if (marker != null) {
+                marker.remove();
+            }
+            markers.remove(key);
         }
     }
 }

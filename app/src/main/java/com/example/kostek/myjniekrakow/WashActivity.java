@@ -1,9 +1,6 @@
 package com.example.kostek.myjniekrakow;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Handler;
-import android.os.Parcelable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -14,43 +11,44 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.kostek.myjniekrakow.adapters.RatingsAdapter;
-import com.example.kostek.myjniekrakow.constants.Status;
 import com.example.kostek.myjniekrakow.models.Rating;
 import com.example.kostek.myjniekrakow.models.Wash;
-import com.example.kostek.myjniekrakow.services.RatingService;
-import com.example.kostek.myjniekrakow.utils.MyResultReceiver;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.ObservableArrayMap;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-public class WashActivity extends AppCompatActivity
-        implements SwipeRefreshLayout.OnRefreshListener, MyResultReceiver.Receiver {
+public class WashActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = WashActivity.class.getSimpleName();
+
     private Wash wash;
+    private String washKey;
     private TextView infoView;
     private RatingBar ratingBar;
     private EditText commentView;
-    private List<Rating> ratings;
     private boolean isSortedByRate;
     private boolean isSortedByDate;
     private RatingsAdapter mAdapter;
+    private DatabaseReference dbRef;
     private RecyclerView recyclerView;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton postCommentButton;
     private RecyclerView.LayoutManager layoutManager;
-
-    public MyResultReceiver mReceiver;
+    private ObservableArrayMap<String, Rating> ratings;
 
 
     @Override
@@ -65,7 +63,10 @@ public class WashActivity extends AppCompatActivity
                 finish();
             } else {
                 wash = extras.getParcelable(getString(R.string.wash_object_key));
+                washKey = extras.getString("dbKey");
             }
+        } else {
+            washKey = savedInstanceState.getString("dbKey");
         }
 
 
@@ -73,7 +74,6 @@ public class WashActivity extends AppCompatActivity
         recyclerView = findViewById(R.id.recyclerview);
         ratingBar = findViewById(R.id.ratingBar);
         commentView = findViewById(R.id.commentText);
-        swipeRefreshLayout = findViewById(R.id.swipe_refresh);
         postCommentButton = findViewById(R.id.fab);
 
         init();
@@ -88,14 +88,18 @@ public class WashActivity extends AppCompatActivity
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(mAdapter);
 
-        mReceiver = new MyResultReceiver(new Handler());
-        mReceiver.setReceiver(this);
-
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         isSortedByDate = false;
         isSortedByRate = false;
         postCommentButton.hide();
+
+
+        ratings = new ObservableArrayMap<>();
+        ratings.addOnMapChangedCallback(new MapListener());
+        dbRef = FirebaseDatabase.getInstance().getReference("ratings/" + washKey);
+        dbRef.addChildEventListener(new RatingsListener());
+        dbRef.keepSynced(true);
     }
 
     private void setListenersOnViews() {
@@ -105,7 +109,8 @@ public class WashActivity extends AppCompatActivity
                 if (hasFocus) {
                     postCommentButton.show();
                 } else {
-                    InputMethodManager imm =  (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager)
+                            getSystemService(Context.INPUT_METHOD_SERVICE);
                     if (imm != null) {
                         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                     }
@@ -122,18 +127,19 @@ public class WashActivity extends AppCompatActivity
                 commentView.setText("");
             }
         });
-        swipeRefreshLayout.setOnRefreshListener(this);
-
     }
 
     private void post_comment() {
-        Intent intent = new Intent(this, RatingService.class);
-        intent.putExtra(getString(R.string.receiver_key), mReceiver);
-        intent.putExtra(getString(R.string.wash_id_key), wash.id);
-        intent.putExtra(getString(R.string.stars_count_key), ratingBar.getRating());
-        intent.putExtra(getString(R.string.comment_key), commentView.getText().toString());
-        intent.putExtra(getString(R.string.action_key), getString(R.string.post_comment));
-        startService(intent);
+
+        String key = dbRef.push().getKey();
+
+        Rating rating = new Rating();
+        rating.comment = commentView.getText().toString();
+        rating.rate = ratingBar.getRating();
+        rating.date = new Date();
+        rating.id = rating.date.getTime() + rating.comment.hashCode();
+
+        dbRef.child(key).setValue(rating);
     }
 
     private void get_info() {
@@ -142,22 +148,9 @@ public class WashActivity extends AppCompatActivity
         infoView.setText(text);
     }
 
-    private void loadRatings() {
-        Intent intent = new Intent(this, RatingService.class);
-        intent.putExtra(getString(R.string.receiver_key), mReceiver);
-        intent.putExtra(getString(R.string.wash_id_key), wash.id);
-        intent.putExtra(getString(R.string.action_key), getString(R.string.get_ratings_action));
-        startService(intent);
-    }
-
     protected void onResume() {
         super.onResume();
         get_info();
-        if (ratings == null) {
-            loadRatings();
-        } else {
-            mAdapter.setRatingsData(ratings);
-        }
     }
 
     @Override
@@ -169,18 +162,18 @@ public class WashActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
         bundle.putParcelable(getString(R.string.wash_object_key), wash);
+        bundle.putString("dbKey", washKey);
         bundle.putBoolean(getString(R.string.is_sorted_by_rate_key), isSortedByRate);
         bundle.putBoolean(getString(R.string.is_sorted_by_date_key), isSortedByDate);
-        bundle.putParcelableArrayList(getString(R.string.ratings_list_key), (ArrayList<? extends Parcelable>) ratings);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle bundle) {
         super.onRestoreInstanceState(bundle);
         wash = bundle.getParcelable(getString(R.string.wash_object_key));
+        washKey = bundle.getString("dbKey");
         isSortedByRate = bundle.getBoolean(getString(R.string.is_sorted_by_rate_key));
         isSortedByDate = bundle.getBoolean(getString(R.string.is_sorted_by_date_key));
-        ratings = bundle.getParcelableArrayList(getString(R.string.ratings_list_key));
     }
 
     @Override
@@ -212,30 +205,49 @@ public class WashActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onRefresh() {
-        loadRatings();
+    private class RatingsListener implements ChildEventListener {
+
+        @Override
+        public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            Rating rating = dataSnapshot.getValue(Rating.class);
+            String key = dataSnapshot.getKey();
+            if (rating != null) {
+                ratings.put(key, rating);
+            }
+        }
+
+        @Override
+        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            Rating rating = dataSnapshot.getValue(Rating.class);
+            String key = dataSnapshot.getKey();
+            if (rating != null) {
+                ratings.put(key, rating);
+            }
+        }
+
+        @Override
+        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+            String key = dataSnapshot.getKey();
+            ratings.remove(key);
+        }
+
+        @Override
+        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
     }
 
-    @Override
-    public void onReceiveResult(int resultCode, Bundle resultData) {
-        if (resultCode == Status.RUNNING) {
-            swipeRefreshLayout.setRefreshing(true);
-        } else if (resultCode == Status.SUCCESSFUL) {
-            ratings = resultData.getParcelableArrayList(getString(R.string.rating_array_key));
-            mAdapter.setRatingsData(ratings);
-            isSortedByRate = false;
-            isSortedByDate = false;
-            swipeRefreshLayout.setRefreshing(false);
-        } else if (resultCode == Status.FAILURE) {
-            swipeRefreshLayout.setRefreshing(false);
-        } else if (resultCode == Status.POST_FAILURE) {
-            Toast.makeText(
-                    WashActivity.this, R.string.on_comment_failure, Toast.LENGTH_SHORT
-            ).show();
-        } else if (resultCode == Status.POST_SUCCESSFUL) {
-            Toast.makeText(WashActivity.this, R.string.on_successful_comment, Toast.LENGTH_SHORT).show();
-            loadRatings();
+    private class MapListener
+            extends ObservableArrayMap.OnMapChangedCallback<ObservableArrayMap
+            <String, Rating>, String, Rating> {
+        @Override
+        public void onMapChanged(ObservableArrayMap<String, Rating> sender, String key) {
+            mAdapter.setRatingsData(sender.values());
         }
     }
 }

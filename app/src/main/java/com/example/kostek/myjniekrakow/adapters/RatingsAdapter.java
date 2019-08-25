@@ -12,16 +12,17 @@ import com.example.kostek.myjniekrakow.R;
 import com.example.kostek.myjniekrakow.models.Rating;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class RatingsAdapter extends RecyclerView.Adapter<RatingsAdapter.RatingViewHolder> {
 
-    private List<Rating> ratings;
+    private ArrayList<Rating> ratings;
 
     public RatingsAdapter() {
     }
@@ -72,8 +73,8 @@ public class RatingsAdapter extends RecyclerView.Adapter<RatingsAdapter.RatingVi
         }
     }
 
-    public void setRatingsData(List<Rating> ratings) {
-        this.ratings = ratings;
+    public void setRatingsData(Collection<Rating> ratings) {
+        this.ratings = new ArrayList<>(ratings);
         notifyDataSetChanged();
     }
 

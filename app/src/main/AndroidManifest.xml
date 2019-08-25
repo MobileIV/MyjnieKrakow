@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
+        android:name=".FirebasePersistApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -45,9 +46,6 @@
             android:name=".WashActivity"
             android:label="" />
         <activity android:name=".ScannerActivity" />
-
-        <service android:name=".services.RatingService" />
-        <service android:name=".services.MainService" />
 
         <activity android:name=".PayingActivity">
             <!--<intent-filter>-->

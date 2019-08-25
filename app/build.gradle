@@ -25,6 +25,10 @@ android {
     packagingOptions {
         exclude 'META-INF/proguard/androidx-annotations.pro'
     }
+
+    dataBinding {
+        enabled = true
+    }
 }
 
 dependencies {
@@ -52,6 +56,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics:17.1.0'
     implementation 'com.google.firebase:firebase-auth:19.0.0'
     implementation 'com.google.firebase:firebase-firestore:21.0.0'
+    implementation 'com.google.firebase:firebase-database:19.0.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'

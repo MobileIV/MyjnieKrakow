@@ -4,16 +4,7 @@ package com.example.kostek.myjniekrakow.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.Index;
-import androidx.room.PrimaryKey;
-
-@Entity(tableName = "Washes", indices = {@Index("id")})
 public class Wash implements Parcelable {
-
-    @PrimaryKey
-    public Integer id;
 
     public String name;
     public String address;
@@ -30,11 +21,6 @@ public class Wash implements Parcelable {
     }
 
     protected Wash(Parcel in) {
-        if (in.readByte() == 0) {
-            id = null;
-        } else {
-            id = in.readInt();
-        }
         name = in.readString();
         address = in.readString();
         lat = in.readDouble();
@@ -70,12 +56,6 @@ public class Wash implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        if (id == null) {
-            dest.writeByte((byte) 0);
-        } else {
-            dest.writeByte((byte) 1);
-            dest.writeInt(id);
-        }
         dest.writeString(name);
         dest.writeString(address);
         dest.writeDouble(lat);
