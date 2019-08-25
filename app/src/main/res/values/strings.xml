@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">MyjnieKrakow</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">MyjnieKrakow</string>
     <string name="permission_required_toast">Location permission required</string>
     <string name="title_activity_wash">WashActivity</string>
-    <string name="base_api_url">https://lovely-warthog-84.localtunnel.me</string>
+    <string name="base_api_url">https://loud-swan-78.localtunnel.me</string>
     <string name="wash_object_key">wash_object</string>
     <string name="komentarz_hint">Komentarz</string>
     <string name="washes_list_key">washes_list</string>

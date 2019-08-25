@@ -4,15 +4,30 @@ package com.example.kostek.myjniekrakow.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.Index;
+import androidx.room.PrimaryKey;
 
+@Entity(tableName = "Washes", indices = {@Index("id")})
 public class Wash implements Parcelable {
+
+    @PrimaryKey
     public Integer id;
+
     public String name;
     public String address;
+
     public double lat;
     public double lng;
+
     public Integer spots_count;
-    public Integer spots_taken;
+
+    public Integer spots_taken = 0;
+
+    public Wash() {
+
+    }
 
     protected Wash(Parcel in) {
         if (in.readByte() == 0) {

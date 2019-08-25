@@ -4,12 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,10 +22,16 @@ import com.example.kostek.myjniekrakow.models.Rating;
 import com.example.kostek.myjniekrakow.models.Wash;
 import com.example.kostek.myjniekrakow.services.RatingService;
 import com.example.kostek.myjniekrakow.utils.MyResultReceiver;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class WashActivity extends AppCompatActivity
         implements SwipeRefreshLayout.OnRefreshListener, MyResultReceiver.Receiver {

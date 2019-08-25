@@ -5,10 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -27,15 +23,21 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentActivity;
 
 public class MapsActivity extends FragmentActivity
         implements
         ActivityCompat.OnRequestPermissionsResultCallback,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
         MyResultReceiver.Receiver {
+
 
     private GoogleMap mMap;
     private BitmapCache bitmapCache;
@@ -74,6 +76,7 @@ public class MapsActivity extends FragmentActivity
                 startActivityForResult(intent, ACTIVITY_REQUEST_CODE);
             }
         });
+
         mapFragment.getMapAsync(this);
     }
 
@@ -180,6 +183,7 @@ public class MapsActivity extends FragmentActivity
 
     @Override
     public void onReceiveResult(int resultCode, Bundle resultData) {
+        Log.d(LOG_TAG, "onReceiveResult: " + resultCode);
         if (resultCode == Status.SUCCESSFUL) {
             washes = resultData.getParcelableArrayList(getString(R.string.washes_list_key));
             populate_markers();

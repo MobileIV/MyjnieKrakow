@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.ResultReceiver;
-import android.support.annotation.Nullable;
 
 import com.example.kostek.myjniekrakow.R;
 import com.example.kostek.myjniekrakow.constants.Status;
@@ -15,6 +14,7 @@ import com.example.kostek.myjniekrakow.rest_api.RatingApi;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.Nullable;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

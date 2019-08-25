@@ -4,9 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -114,7 +115,7 @@ public class ScannerActivity extends Activity {
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode != PERMISSION_CODE) {
-            return;
+            return;     
         }
         mPermissionDenied = permissions.length <= 0 || !permissions[0].equals(Manifest.permission.ACCESS_FINE_LOCATION)
                 || grantResults[0] != PackageManager.PERMISSION_GRANTED;

@@ -5,12 +5,29 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
+import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "Ratings",
+        foreignKeys = @ForeignKey(entity = Wash.class,
+        parentColumns = "id",
+        childColumns = "wash_id",
+        onDelete = ForeignKey.CASCADE))
 public class Rating implements Parcelable {
+
+    @PrimaryKey
     public Integer id;
+
     public Integer wash_id;
+
     public String comment;
     public Float rate;
     public Date date;
+
+    public Rating() {
+
+    }
 
     protected Rating(Parcel in) {
         if (in.readByte() == 0) {
