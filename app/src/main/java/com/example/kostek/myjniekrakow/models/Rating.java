@@ -5,10 +5,6 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
-import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.PrimaryKey;
-
 public class Rating implements Parcelable {
 
     public Long id;

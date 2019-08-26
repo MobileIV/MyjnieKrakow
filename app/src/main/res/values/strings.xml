@@ -38,5 +38,7 @@
     <string name="scanner_status_text">Zeskanuj kod qr na myjnii by rozpocząć płatność</string>
     <string name="pay_button_text">Zapłać</string>
     <string name="wash_address_key">wash_address_key</string>
+    <string name="sign_in">Sign in</string>
+    <string name="continue_as_guest">Continue as guest</string>
 
 </resources>
