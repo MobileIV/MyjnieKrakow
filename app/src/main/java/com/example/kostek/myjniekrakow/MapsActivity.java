@@ -3,14 +3,16 @@ package com.example.kostek.myjniekrakow;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.kostek.myjniekrakow.models.Wash;
 import com.example.kostek.myjniekrakow.utils.BitmapCache;
+import com.example.kostek.myjniekrakow.utils.LogoutManager;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -30,11 +32,11 @@ import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.ObservableArrayMap;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentActivity;
 
-public class MapsActivity extends FragmentActivity
+public class MapsActivity extends AppCompatActivity
         implements
         ActivityCompat.OnRequestPermissionsResultCallback,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
@@ -250,5 +252,22 @@ public class MapsActivity extends FragmentActivity
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.maps_activity_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.logOut:
+                LogoutManager.logOut();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

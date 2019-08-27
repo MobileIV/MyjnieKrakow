@@ -12,6 +12,6 @@
         android:id="@+id/sort_by_date"
         android:icon="@android:drawable/ic_menu_week"
         android:title="@string/sort_by_date"
-        />
+            />
 
 </menu>
