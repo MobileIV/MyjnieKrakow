@@ -81,25 +81,19 @@ public class RatingsAdapter extends RecyclerView.Adapter<RatingsAdapter.RatingVi
     public void sort(SortOn s, final boolean reverse) {
         switch (s) {
             case RATE:
-                Collections.sort(ratings, new Comparator<Rating>() {
-                    @Override
-                    public int compare(Rating o1, Rating o2) {
-                        if (reverse) {
-                            return o2.rate.compareTo(o1.rate);
-                        }
-                        return o1.rate.compareTo(o2.rate);
+                Collections.sort(ratings, (o1, o2) -> {
+                    if (reverse) {
+                        return o2.rate.compareTo(o1.rate);
                     }
+                    return o1.rate.compareTo(o2.rate);
                 });
                 break;
             case DATE:
-                Collections.sort(ratings, new Comparator<Rating>() {
-                    @Override
-                    public int compare(Rating o1, Rating o2) {
-                        if (reverse) {
-                            return o2.date.compareTo(o1.date);
-                        }
-                        return o1.date.compareTo(o2.date);
+                Collections.sort(ratings, (o1, o2) -> {
+                    if (reverse) {
+                        return o2.date.compareTo(o1.date);
                     }
+                    return o1.date.compareTo(o2.date);
                 });
                 break;
         }

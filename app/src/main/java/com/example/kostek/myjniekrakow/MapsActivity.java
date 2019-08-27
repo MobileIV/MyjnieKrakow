@@ -68,12 +68,9 @@ public class MapsActivity extends FragmentActivity
         markers = new HashMap<>();
         bitmapCache = new BitmapCache(20, this);
 
-        openScanner.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MapsActivity.this, ScannerActivity.class);
-                startActivityForResult(intent, ACTIVITY_REQUEST_CODE);
-            }
+        openScanner.setOnClickListener(v -> {
+            Intent intent = new Intent(MapsActivity.this, ScannerActivity.class);
+            startActivityForResult(intent, ACTIVITY_REQUEST_CODE);
         });
 
         dbRef = FirebaseDatabase.getInstance().getReference("Washes");
@@ -165,6 +162,7 @@ public class MapsActivity extends FragmentActivity
                     this, "Niepoprawny kod qr", Toast.LENGTH_SHORT
             ).show();
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private class ChildListener implements ChildEventListener {

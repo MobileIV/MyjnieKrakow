@@ -36,6 +36,7 @@ public class ScannerActivity extends Activity {
     private Gson gson;
     private DecoratedBarcodeView barcodeView;
     private boolean mPermissionDenied = false;
+
     private BarcodeCallback callback = new BarcodeCallback() {
         @Override
         public void barcodeResult(BarcodeResult result) {
