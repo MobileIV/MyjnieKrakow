@@ -7,6 +7,7 @@ import android.widget.Button;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Arrays;
@@ -23,8 +24,8 @@ public class LoginActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 123;
     private static final String LOG_TAG = LoginActivity.class.getSimpleName();
 
-    private Button login;
-    private Button guest;
+    private MaterialButton login;
+    private MaterialButton guest;
 
 
     @Override

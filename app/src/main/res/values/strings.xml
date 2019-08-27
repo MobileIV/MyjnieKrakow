@@ -40,5 +40,7 @@
     <string name="wash_address_key">wash_address_key</string>
     <string name="sign_in">Sign in</string>
     <string name="continue_as_guest">Continue as guest</string>
+    <string name="appName">Myjnie Kraków</string>
+    <string name="login_to_comment">Login to comment</string>
 
 </resources>

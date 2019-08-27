@@ -52,7 +52,7 @@ public class WashActivity extends AppCompatActivity {
     private DatabaseReference dbRef;
     private RecyclerView recyclerView;
     private FloatingActionButton postCommentButton;
-    private RecyclerView.LayoutManager layoutManager;
+    private LinearLayoutManager layoutManager;
     private ObservableArrayMap<String, Rating> ratings;
 
 
