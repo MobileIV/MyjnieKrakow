@@ -10,6 +10,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.kostek.myjniekrakow.fragments.LogoutFragment;
 import com.example.kostek.myjniekrakow.models.Wash;
 import com.example.kostek.myjniekrakow.utils.BitmapCache;
 import com.example.kostek.myjniekrakow.utils.LogoutManager;
@@ -94,7 +95,8 @@ public class MapsActivity extends AppCompatActivity
     private void enableLocation() {
         if (ActivityCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.checkSelfPermission(
+                        this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                     this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_CODE);
         } else if (mMap != null) {
@@ -127,11 +129,6 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
     public boolean onMarkerClick(Marker marker) {
         Intent intent = new Intent(this, WashActivity.class);
         String key = (String) marker.getTag();
@@ -139,16 +136,6 @@ public class MapsActivity extends AppCompatActivity
         intent.putExtra("dbKey", key);
         startActivity(intent);
         return true;
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle bundle) {
-        super.onSaveInstanceState(bundle);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle bundle) {
-        super.onRestoreInstanceState(bundle);
     }
 
     @Override
@@ -265,7 +252,8 @@ public class MapsActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.logOut:
-                LogoutManager.logOut();
+                new LogoutFragment()
+                        .show(getSupportFragmentManager(), "LogoutFragment");
                 return true;
         }
         return super.onOptionsItemSelected(item);
