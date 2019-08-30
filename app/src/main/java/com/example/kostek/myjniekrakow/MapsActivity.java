@@ -3,6 +3,7 @@ package com.example.kostek.myjniekrakow;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,6 +18,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -210,13 +212,26 @@ public class MapsActivity extends AppCompatActivity
         }
 
         private void addMarker(String key, Wash wash) {
-            Marker marker = mMap.addMarker(
-                    new MarkerOptions()
-                            .position(new LatLng(wash.lat, wash.lng))
-                            .title(wash.name)
-                            .icon(BitmapDescriptorFactory
-                                    .fromBitmap(bitmapCache.get(wash.freeSpots().toString())))
-            );
+
+            Marker marker;
+            BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(
+                    bitmapCache.get(wash.freeSpots().toString()));
+            LatLng position = new LatLng(wash.lat, wash.lng);
+            String title = wash.name;
+            
+            if (markers.containsKey(key)) {
+                marker = markers.get(key);
+                marker.setIcon(icon);
+                marker.setPosition(position);
+                marker.setTitle(title);
+            } else {
+                marker = mMap.addMarker(
+                        new MarkerOptions()
+                                .position(position)
+                                .title(title)
+                                .icon(icon)
+                );
+            }
             marker.setTag(key);
             marker.setVisible(true);
             markers.put(key, marker);
