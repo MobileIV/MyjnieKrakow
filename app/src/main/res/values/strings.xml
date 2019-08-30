@@ -43,5 +43,7 @@
     <string name="appName">Myjnie Kraków</string>
     <string name="login_to_comment">Login to comment</string>
     <string name="logout">logout</string>
+    <string name="reserve">Reserve</string>
+    <string name="ratings">Ratings</string>
 
 </resources>

@@ -3,7 +3,6 @@ package com.example.kostek.myjniekrakow;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -11,13 +10,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.appolica.interactiveinfowindow.InfoWindow;
+import com.appolica.interactiveinfowindow.InfoWindowManager;
+import com.appolica.interactiveinfowindow.fragment.MapInfoWindowFragment;
+import com.example.kostek.myjniekrakow.fragments.InfoViewFragment;
 import com.example.kostek.myjniekrakow.fragments.LogoutFragment;
 import com.example.kostek.myjniekrakow.models.Wash;
 import com.example.kostek.myjniekrakow.utils.BitmapCache;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -45,13 +47,14 @@ public class MapsActivity extends AppCompatActivity
 
 
     private GoogleMap mMap;
+    private InfoWindowManager windowManager;
     private BitmapCache bitmapCache;
-    private DatabaseReference dbRef;
-    private FloatingActionButton openScanner;
     private boolean mPermissionDenied = false;
 
-    private HashMap<String, Marker> markers;
-    private ObservableArrayMap<String, Wash> washes;
+    private final InfoWindow.MarkerSpecification specs =
+            new InfoWindow.MarkerSpecification(0, 118);
+    private final HashMap<String, Marker> markers = new HashMap<>();
+    private final ObservableArrayMap<String, Wash> washes = new ObservableArrayMap<>();
 
     private static final String LOG_TAG = MapsActivity.class.getSimpleName();
     private static final Integer ACTIVITY_REQUEST_CODE = 2;
@@ -63,15 +66,12 @@ public class MapsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_maps);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        MapInfoWindowFragment mapFragment = (MapInfoWindowFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        windowManager = mapFragment.infoWindowManager();
 
-        openScanner = findViewById(R.id.scanner);
-
-        washes = new ObservableArrayMap<>();
-        washes.addOnMapChangedCallback(new MapListener());
-        markers = new HashMap<>();
+        final FloatingActionButton openScanner = findViewById(R.id.scanner);
         bitmapCache = new BitmapCache(20, this);
 
         openScanner.setOnClickListener(v -> {
@@ -80,10 +80,11 @@ public class MapsActivity extends AppCompatActivity
         });
 
         dbSetup();
+        washes.addOnMapChangedCallback(new MapListener());
     }
 
     private void dbSetup() {
-        dbRef = FirebaseDatabase.getInstance().getReference("Washes");
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Washes");
         dbRef.keepSynced(true);
         dbRef.addChildEventListener(new ChildListener());
     }
@@ -135,11 +136,14 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        Intent intent = new Intent(this, WashActivity.class);
         String key = (String) marker.getTag();
-        intent.putExtra(getString(R.string.wash_object_key), washes.get(key));
-        intent.putExtra("dbKey", key);
-        startActivity(intent);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("wash_object", washes.get(key));
+        bundle.putString("dbKey", key);
+        InfoViewFragment fragment = new InfoViewFragment();
+        fragment.setArguments(bundle);
+        InfoWindow view = new InfoWindow(marker, specs, fragment);
+        windowManager.toggle(view);
         return true;
     }
 
@@ -218,7 +222,7 @@ public class MapsActivity extends AppCompatActivity
                     bitmapCache.get(wash.freeSpots().toString()));
             LatLng position = new LatLng(wash.lat, wash.lng);
             String title = wash.name;
-            
+
             if (markers.containsKey(key)) {
                 marker = markers.get(key);
                 marker.setIcon(icon);
