@@ -13,7 +13,6 @@ import android.widget.Toast;
 import com.example.kostek.myjniekrakow.fragments.LogoutFragment;
 import com.example.kostek.myjniekrakow.models.Wash;
 import com.example.kostek.myjniekrakow.utils.BitmapCache;
-import com.example.kostek.myjniekrakow.utils.LogoutManager;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -60,9 +59,11 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_maps);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         openScanner = findViewById(R.id.scanner);
 
@@ -76,11 +77,13 @@ public class MapsActivity extends AppCompatActivity
             startActivityForResult(intent, ACTIVITY_REQUEST_CODE);
         });
 
+        dbSetup();
+    }
+
+    private void dbSetup() {
         dbRef = FirebaseDatabase.getInstance().getReference("Washes");
         dbRef.keepSynced(true);
         dbRef.addChildEventListener(new ChildListener());
-
-        mapFragment.getMapAsync(this);
     }
 
     @Override
@@ -163,7 +166,6 @@ public class MapsActivity extends AppCompatActivity
             if (wash != null) {
                 washes.put(key, wash);
             }
-            Log.d(LOG_TAG, "onChildAdded: " + wash.address + " " + wash.lat + " " + wash.lng);
         }
 
         @Override
@@ -173,7 +175,6 @@ public class MapsActivity extends AppCompatActivity
             if (wash != null) {
                 washes.put(key, wash);
             }
-            Log.d(LOG_TAG, "onChildAdded: " + wash.address + " " + wash.lat + " " + wash.lng);
         }
 
         @Override
@@ -183,13 +184,10 @@ public class MapsActivity extends AppCompatActivity
             if (wash != null) {
                 washes.remove(key);
             }
-            Log.d(LOG_TAG, "onChildRemoved: " + wash.address);
         }
 
         @Override
         public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-            Wash wash = dataSnapshot.getValue(Wash.class);
-            Log.d(LOG_TAG, "onChildMoved: " + wash.address);
         }
 
         @Override
@@ -212,7 +210,6 @@ public class MapsActivity extends AppCompatActivity
         }
 
         private void addMarker(String key, Wash wash) {
-            Log.d(LOG_TAG, "addMarker: " + wash.address);
             Marker marker = mMap.addMarker(
                     new MarkerOptions()
                             .position(new LatLng(wash.lat, wash.lng))
