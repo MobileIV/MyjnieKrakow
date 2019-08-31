@@ -31,7 +31,7 @@ public class InfoViewFragment extends Fragment {
         setup();
 
         final TextView text = view.findViewById(R.id.info_section);
-        String info = wash.name + " lalal " + wash.address;
+        String info = wash.name + " " + wash.address;
         text.setText(info);
 
         view.findViewById(R.id.comment_section).setOnClickListener(e -> {
@@ -39,6 +39,12 @@ public class InfoViewFragment extends Fragment {
             intent.putExtra(getString(R.string.wash_object_key), wash);
             intent.putExtra("dbKey", dbKey);
             startActivity(intent);
+            if (getFragmentManager() != null) {
+                getFragmentManager()
+                        .beginTransaction()
+                        .remove(InfoViewFragment.this)
+                        .commit();
+            }
         });
         view.findViewById(R.id.paying_section).setOnClickListener(e -> {
             Toast.makeText(getContext(), "ALOHA", Toast.LENGTH_LONG).show();
