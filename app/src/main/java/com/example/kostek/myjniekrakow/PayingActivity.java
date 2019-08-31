@@ -3,7 +3,6 @@ package com.example.kostek.myjniekrakow;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
@@ -55,15 +54,12 @@ public class PayingActivity  extends AppCompatActivity
         minutesBar = findViewById(R.id.minutesBar);
         payButton = findViewById(R.id.pay_button);
         washInfo = findViewById(R.id.washInfoText);
-        payButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(
-                        PayingActivity.this, "Dokonano płatności, możesz zacząć myć samochód", Toast.LENGTH_SHORT
-                ).show();
-                // jk
-                finish();
-            }
+        payButton.setOnClickListener(v -> {
+            Toast.makeText(
+                    PayingActivity.this, "Dokonano płatności, możesz zacząć myć samochód", Toast.LENGTH_SHORT
+            ).show();
+            // jk
+            finish();
         });
         minutesBar.setOnSeekBarChangeListener(this);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);

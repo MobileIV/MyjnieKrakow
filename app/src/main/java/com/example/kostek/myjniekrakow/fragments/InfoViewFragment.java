@@ -1,5 +1,6 @@
 package com.example.kostek.myjniekrakow.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kostek.myjniekrakow.R;
+import com.example.kostek.myjniekrakow.ReserveActivity;
 import com.example.kostek.myjniekrakow.WashActivity;
 import com.example.kostek.myjniekrakow.models.Wash;
 
@@ -34,22 +36,24 @@ public class InfoViewFragment extends Fragment {
         String info = wash.name + " " + wash.address;
         text.setText(info);
 
-        view.findViewById(R.id.comment_section).setOnClickListener(e -> {
-            Intent intent = new Intent(getContext(), WashActivity.class);
-            intent.putExtra(getString(R.string.wash_object_key), wash);
-            intent.putExtra("dbKey", dbKey);
-            startActivity(intent);
-            if (getFragmentManager() != null) {
-                getFragmentManager()
-                        .beginTransaction()
-                        .remove(InfoViewFragment.this)
-                        .commit();
-            }
-        });
-        view.findViewById(R.id.paying_section).setOnClickListener(e -> {
-            Toast.makeText(getContext(), "ALOHA", Toast.LENGTH_LONG).show();
-        });
+        view.findViewById(R.id.comment_section).setOnClickListener(e ->
+                runActivity(WashActivity.class));
+        view.findViewById(R.id.paying_section).setOnClickListener(e ->
+                runActivity(ReserveActivity.class));
 
+    }
+
+    private void runActivity(Class<? extends Activity> clazz) {
+        Intent intent = new Intent(getContext(), clazz);
+        intent.putExtra(getString(R.string.wash_object_key), wash);
+        intent.putExtra("dbKey", dbKey);
+        startActivity(intent);
+        if (getFragmentManager() != null) {
+            getFragmentManager()
+                    .beginTransaction()
+                    .remove(InfoViewFragment.this)
+                    .commit();
+        }
     }
 
     private void setup() {
