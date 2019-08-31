@@ -1,42 +1,54 @@
 package com.example.kostek.myjniekrakow;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Pair;
 import android.view.View;
+import android.widget.Chronometer;
+import android.widget.NumberPicker;
 import android.widget.Toast;
 
 import com.example.kostek.myjniekrakow.models.Wash;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class ReserveActivity extends AppCompatActivity implements ChildEventListener {
 
     private Wash wash;
     private String key;
+    private int value = -1;
+    private boolean isTimer = false;
+    private Chronometer chronometer;
+    private NumberPicker picker;
     private HashMap<String, Wash> washes;
     private FusedLocationProviderClient locationClient;
+    private MaterialButton button;
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
 
+        dbSetup();
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             wash = extras.getParcelable("wash_object");
@@ -44,13 +56,66 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         }
 
         setContentView(R.layout.activity_reserve);
-        locationClient = LocationServices.getFusedLocationProviderClient(this);
-        locationClient.getLastLocation().addOnSuccessListener(this::onLocationObtained);
+        if (bundle == null) {
+            locationClient = LocationServices.getFusedLocationProviderClient(this);
+            locationClient.getLastLocation().addOnSuccessListener(this::onLocationObtained);
+        }
 
         washes = new HashMap<>();
+        button = findViewById(R.id.start);
+        button.setOnClickListener(e -> startTimer());
 
-        dbSetup();
+        chronometer = findViewById(R.id.timer);
+        chronometer.setVisibility(View.INVISIBLE);
+        chronometer.setSaveEnabled(true);
+        chronometer.setOnChronometerTickListener(chr -> {
+            if (SystemClock.elapsedRealtime() >= chr.getBase()) {
+                chr.stop();
+                hideTimer();
+            }
+        });
+
+        picker = findViewById(R.id.picker);
+        picker.setMaxValue(15);
+        picker.setMinValue(1);
+        picker.setOnValueChangedListener((np, oldV, v) -> {
+            value = v;
+        });
+        value = picker.getValue();
     }
+
+    private void showTimer() {
+        button.setVisibility(View.INVISIBLE);
+        picker.setVisibility(View.INVISIBLE);
+        chronometer.setVisibility(View.VISIBLE);
+    }
+
+    private void hideTimer() {
+        button.setVisibility(View.VISIBLE);
+        picker.setVisibility(View.VISIBLE);
+        chronometer.setVisibility(View.INVISIBLE);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isTimer) {
+            showTimer();
+        } else {
+            hideTimer();
+        }
+    }
+
+    private void startTimer() {
+        isTimer = true;
+        showTimer();
+        chronometer.setCountDown(true);
+        chronometer.setBase(SystemClock.elapsedRealtime() + 60 * 1000 * value);
+        chronometer.start();
+        Toast.makeText(this, "" + value, Toast.LENGTH_SHORT).show();
+    }
+
     private void dbSetup() {
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Washes");
         dbRef.keepSynced(true);
@@ -153,6 +218,9 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         super.onSaveInstanceState(bundle);
         bundle.putParcelable(getString(R.string.wash_object_key), wash);
         bundle.putString("dbKey", key);
+        bundle.putInt("value", value);
+        bundle.putBoolean("isTimer", isTimer);
+        bundle.putLong("base", chronometer.getBase());
     }
 
     @Override
@@ -160,5 +228,15 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         super.onRestoreInstanceState(bundle);
         wash = bundle.getParcelable(getString(R.string.wash_object_key));
         key = bundle.getString("dbKey");
+        value = bundle.getInt("value");
+        isTimer = bundle.getBoolean("isTimer");
+        if (value != -1) {
+            picker.setValue(value);
+        }
+        if (isTimer) {
+            chronometer.setBase(bundle.getLong("base"));
+            chronometer.start();
+            chronometer.setCountDown(true);
+        }
     }
 }

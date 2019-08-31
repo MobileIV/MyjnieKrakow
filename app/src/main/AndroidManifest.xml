@@ -51,6 +51,7 @@
         </activity>
         <activity android:name=".ReserveActivity" />
 
+        <service android:name=".services.TimerService" />
     </application>
 
 </manifest>
