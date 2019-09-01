@@ -31,6 +31,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import static com.example.kostek.myjniekrakow.utils.Constants.BASE;
+import static com.example.kostek.myjniekrakow.utils.Constants.IS_TIMER;
+import static com.example.kostek.myjniekrakow.utils.Constants.VALUE;
+import static com.example.kostek.myjniekrakow.utils.Constants.WASH;
+import static com.example.kostek.myjniekrakow.utils.Constants.WASH_KEY;
+
 public class ReserveActivity extends AppCompatActivity implements ChildEventListener {
 
     private boolean firstRun = true;
@@ -51,8 +57,8 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         dbSetup();
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            wash = extras.getParcelable("wash_object");
-            dbKey = extras.getString("dbKey");
+            wash = extras.getParcelable(WASH);
+            dbKey = extras.getString(WASH_KEY);
         }
 
         setContentView(R.layout.activity_reserve);
@@ -115,7 +121,6 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         chronometer.setCountDown(true);
         chronometer.setBase(SystemClock.elapsedRealtime() + 60 * 1000 * value);
         chronometer.start();
-        Toast.makeText(this, "" + value, Toast.LENGTH_SHORT).show();
     }
 
     private void dbSetup() {
@@ -125,9 +130,7 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     }
 
     private void onLocationObtained(Location location) {
-
         Pair<String, Float> result = getNearestWashKeyDist(location);
-        Toast.makeText(this, dbKey + " " + result.first, Toast.LENGTH_SHORT).show();
         if (!dbKey.equals(result.first)) {
             View view = findViewById(R.id.snackbarView);
             Wash nearestWash = washes.get(result.first);
@@ -138,8 +141,8 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
                         Snackbar.LENGTH_LONG
                 ).setAction("Change Wash", e -> {
                     Intent intent = new Intent(this, ReserveActivity.class);
-                    intent.putExtra(getString(R.string.wash_object_key), nearestWash);
-                    intent.putExtra("dbKey", result.first);
+                    intent.putExtra(WASH, nearestWash);
+                    intent.putExtra(WASH_KEY, result.first);
                     finish();
                     startActivity(intent);
                 }).show();
@@ -227,10 +230,10 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         super.onStop();
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean("isTimer" ,isTimer);
+        editor.putBoolean(IS_TIMER ,isTimer);
         if (isTimer) {
-            editor.putString("dbKey", dbKey);
-            editor.putLong("base", chronometer.getBase());
+            editor.putString(WASH_KEY, dbKey);
+            editor.putLong(BASE, chronometer.getBase());
         }
         editor.apply();
     }
@@ -239,14 +242,14 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     protected void onStart() {
         super.onStart();
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        boolean timerRunning = preferences.getBoolean("isTimer", false);
+        boolean timerRunning = preferences.getBoolean(IS_TIMER, false);
         if (timerRunning) {
             isTimer = true;
-            String washKey = preferences.getString("dbKey", dbKey);
+            String washKey = preferences.getString(WASH_KEY, dbKey);
             if (!washKey.equals(dbKey)) {
                 wash = washes.getOrDefault(washKey, wash);
             }
-            chronometer.setBase(preferences.getLong("base", chronometer.getBase()));
+            chronometer.setBase(preferences.getLong(BASE, chronometer.getBase()));
             chronometer.start();
             chronometer.setCountDown(true);
         }
@@ -255,25 +258,25 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     @Override
     protected void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
-        bundle.putParcelable(getString(R.string.wash_object_key), wash);
-        bundle.putString("dbKey", dbKey);
-        bundle.putInt("value", value);
-        bundle.putBoolean("isTimer", isTimer);
-        bundle.putLong("base", chronometer.getBase());
+        bundle.putParcelable(WASH, wash);
+        bundle.putString(WASH_KEY, dbKey);
+        bundle.putInt(VALUE, value);
+        bundle.putBoolean(IS_TIMER, isTimer);
+        bundle.putLong(BASE, chronometer.getBase());
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle bundle) {
         super.onRestoreInstanceState(bundle);
-        wash = bundle.getParcelable(getString(R.string.wash_object_key));
-        dbKey = bundle.getString("dbKey");
-        value = bundle.getInt("value");
-        isTimer = bundle.getBoolean("isTimer");
+        wash = bundle.getParcelable(WASH);
+        dbKey = bundle.getString(WASH_KEY);
+        value = bundle.getInt(VALUE);
+        isTimer = bundle.getBoolean(IS_TIMER);
         if (value != -1) {
             picker.setValue(value);
         }
         if (isTimer) {
-            chronometer.setBase(bundle.getLong("base"));
+            chronometer.setBase(bundle.getLong(BASE));
             chronometer.start();
             chronometer.setCountDown(true);
         }

@@ -36,6 +36,11 @@ import androidx.databinding.ObservableArrayMap;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import static com.example.kostek.myjniekrakow.utils.Constants.SORTED_BY_DATE;
+import static com.example.kostek.myjniekrakow.utils.Constants.SORTED_BY_RATE;
+import static com.example.kostek.myjniekrakow.utils.Constants.WASH;
+import static com.example.kostek.myjniekrakow.utils.Constants.WASH_KEY;
+
 public class WashActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = WashActivity.class.getSimpleName();
@@ -67,11 +72,11 @@ public class WashActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, "onCreate: no extras :(");
                 finish();
             } else {
-                wash = extras.getParcelable(getString(R.string.wash_object_key));
-                washKey = extras.getString("dbKey");
+                wash = extras.getParcelable(WASH);
+                washKey = extras.getString(WASH_KEY);
             }
         } else {
-            washKey = savedInstanceState.getString("dbKey");
+            washKey = savedInstanceState.getString(WASH_KEY);
         }
 
         infoView = findViewById(R.id.infoView);
@@ -178,19 +183,19 @@ public class WashActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
-        bundle.putParcelable(getString(R.string.wash_object_key), wash);
-        bundle.putString("dbKey", washKey);
-        bundle.putBoolean(getString(R.string.is_sorted_by_rate_key), isSortedByRate);
-        bundle.putBoolean(getString(R.string.is_sorted_by_date_key), isSortedByDate);
+        bundle.putParcelable(WASH, wash);
+        bundle.putString(WASH_KEY, washKey);
+        bundle.putBoolean(SORTED_BY_RATE, isSortedByRate);
+        bundle.putBoolean(SORTED_BY_RATE, isSortedByDate);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle bundle) {
         super.onRestoreInstanceState(bundle);
-        wash = bundle.getParcelable(getString(R.string.wash_object_key));
-        washKey = bundle.getString("dbKey");
-        isSortedByRate = bundle.getBoolean(getString(R.string.is_sorted_by_rate_key));
-        isSortedByDate = bundle.getBoolean(getString(R.string.is_sorted_by_date_key));
+        wash = bundle.getParcelable(WASH);
+        washKey = bundle.getString(WASH_KEY);
+        isSortedByRate = bundle.getBoolean(SORTED_BY_RATE);
+        isSortedByDate = bundle.getBoolean(SORTED_BY_DATE);
     }
 
     @Override

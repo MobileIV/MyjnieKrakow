@@ -7,14 +7,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.kostek.myjniekrakow.R;
 import com.example.kostek.myjniekrakow.ReserveActivity;
 import com.example.kostek.myjniekrakow.WashActivity;
 import com.example.kostek.myjniekrakow.models.Wash;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+
+import static com.example.kostek.myjniekrakow.utils.Constants.WASH;
+import static com.example.kostek.myjniekrakow.utils.Constants.WASH_KEY;
 
 public class InfoViewFragment extends Fragment {
 
@@ -28,7 +31,7 @@ public class InfoViewFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setup();
 
@@ -45,8 +48,8 @@ public class InfoViewFragment extends Fragment {
 
     private void runActivity(Class<? extends Activity> clazz) {
         Intent intent = new Intent(getContext(), clazz);
-        intent.putExtra(getString(R.string.wash_object_key), wash);
-        intent.putExtra("dbKey", dbKey);
+        intent.putExtra(WASH, wash);
+        intent.putExtra(WASH_KEY, dbKey);
         startActivity(intent);
         if (getFragmentManager() != null) {
             getFragmentManager()
@@ -59,8 +62,8 @@ public class InfoViewFragment extends Fragment {
     private void setup() {
         Bundle args = getArguments();
         if (args != null) {
-            dbKey = args.getString("dbKey");
-            wash = args.getParcelable("wash_object");
+            dbKey = args.getString(WASH_KEY);
+            wash = args.getParcelable(WASH);
         }
     }
 }

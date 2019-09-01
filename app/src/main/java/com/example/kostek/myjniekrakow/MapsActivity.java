@@ -37,8 +37,11 @@ import java.util.HashMap;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.ObservableArrayMap;
 import androidx.core.app.ActivityCompat;
+import androidx.databinding.ObservableArrayMap;
+
+import static com.example.kostek.myjniekrakow.utils.Constants.WASH;
+import static com.example.kostek.myjniekrakow.utils.Constants.WASH_KEY;
 
 public class MapsActivity extends AppCompatActivity
         implements
@@ -46,20 +49,16 @@ public class MapsActivity extends AppCompatActivity
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
 
-    private GoogleMap mMap;
-    private InfoWindowManager windowManager;
-    private BitmapCache bitmapCache;
-    private boolean mPermissionDenied = false;
-
+    private static final String LOG_TAG = MapsActivity.class.getSimpleName();
+    private static final Integer PERMISSION_CODE = 1;
     private final InfoWindow.MarkerSpecification specs =
             new InfoWindow.MarkerSpecification(0, 118);
     private final HashMap<String, Marker> markers = new HashMap<>();
     private final ObservableArrayMap<String, Wash> washes = new ObservableArrayMap<>();
-
-    private static final String LOG_TAG = MapsActivity.class.getSimpleName();
-    private static final Integer ACTIVITY_REQUEST_CODE = 2;
-    private static final Integer PERMISSION_CODE = 1;
-
+    private GoogleMap mMap;
+    private InfoWindowManager windowManager;
+    private BitmapCache bitmapCache;
+    private boolean mPermissionDenied = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +74,7 @@ public class MapsActivity extends AppCompatActivity
         bitmapCache = new BitmapCache(20, this);
 
         openScanner.setOnClickListener(v -> {
-            Intent intent = new Intent(MapsActivity.this, ScannerActivity.class);
-            startActivityForResult(intent, ACTIVITY_REQUEST_CODE);
+            //
         });
 
         dbSetup();
@@ -104,7 +102,7 @@ public class MapsActivity extends AppCompatActivity
                 ActivityCompat.checkSelfPermission(
                         this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
-                    this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_CODE);
+                    this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_CODE);
         } else if (mMap != null) {
             mMap.setMyLocationEnabled(true);
         }
@@ -138,8 +136,8 @@ public class MapsActivity extends AppCompatActivity
     public boolean onMarkerClick(Marker marker) {
         String key = (String) marker.getTag();
         Bundle bundle = new Bundle();
-        bundle.putParcelable("wash_object", washes.get(key));
-        bundle.putString("dbKey", key);
+        bundle.putParcelable(WASH, washes.get(key));
+        bundle.putString(WASH_KEY, key);
         InfoViewFragment fragment = new InfoViewFragment();
         fragment.setArguments(bundle);
         InfoWindow view = new InfoWindow(marker, specs, fragment);
@@ -148,19 +146,28 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(LOG_TAG, "onActivityResult: " + resultCode);
-        if (requestCode == ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            Bundle bundle = data.getExtras();
-            Intent intent = new Intent(this, PayingActivity.class);
-            intent.putExtras(bundle);
-            startActivity(intent);
-        } else  {
-            Toast.makeText(
-                    this, "Niepoprawny kod qr", Toast.LENGTH_SHORT
-            ).show();
+    public void onBackPressed() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.maps_activity_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.logOut:
+                new LogoutFragment()
+                        .show(getSupportFragmentManager(), "LogoutFragment");
+                return true;
         }
-        super.onActivityResult(requestCode, resultCode, data);
+        return super.onOptionsItemSelected(item);
     }
 
     private class ChildListener implements ChildEventListener {
@@ -248,30 +255,5 @@ public class MapsActivity extends AppCompatActivity
             }
             markers.remove(key);
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        startActivity(intent);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.maps_activity_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.logOut:
-                new LogoutFragment()
-                        .show(getSupportFragmentManager(), "LogoutFragment");
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 }
