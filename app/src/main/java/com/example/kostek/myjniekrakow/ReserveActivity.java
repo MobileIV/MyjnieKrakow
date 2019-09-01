@@ -1,9 +1,9 @@
 package com.example.kostek.myjniekrakow;
 
-import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Pair;
@@ -29,37 +29,33 @@ import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class ReserveActivity extends AppCompatActivity implements ChildEventListener {
 
+    private boolean firstRun = true;
     private Wash wash;
-    private String key;
+    private String dbKey;
     private int value = -1;
     private boolean isTimer = false;
     private Chronometer chronometer;
     private NumberPicker picker;
     private HashMap<String, Wash> washes;
-    private FusedLocationProviderClient locationClient;
     private MaterialButton button;
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        firstRun = bundle == null;
 
         dbSetup();
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             wash = extras.getParcelable("wash_object");
-            key = extras.getString("dbKey");
+            dbKey = extras.getString("dbKey");
         }
 
         setContentView(R.layout.activity_reserve);
-        if (bundle == null) {
-            locationClient = LocationServices.getFusedLocationProviderClient(this);
-            locationClient.getLastLocation().addOnSuccessListener(this::onLocationObtained);
-        }
 
         washes = new HashMap<>();
         button = findViewById(R.id.start);
@@ -91,6 +87,7 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     }
 
     private void hideTimer() {
+        isTimer = false;
         button.setVisibility(View.VISIBLE);
         picker.setVisibility(View.VISIBLE);
         chronometer.setVisibility(View.INVISIBLE);
@@ -103,6 +100,11 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         if (isTimer) {
             showTimer();
         } else {
+            if (firstRun) {
+                FusedLocationProviderClient locationClient
+                        = LocationServices.getFusedLocationProviderClient(this);
+                locationClient.getLastLocation().addOnSuccessListener(this::onLocationObtained);
+            }
             hideTimer();
         }
     }
@@ -123,9 +125,10 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     }
 
     private void onLocationObtained(Location location) {
+
         Pair<String, Float> result = getNearestWashKeyDist(location);
-        Toast.makeText(this, key + " " + result.first, Toast.LENGTH_SHORT).show();
-        if (!key.equals(result.first)) {
+        Toast.makeText(this, dbKey + " " + result.first, Toast.LENGTH_SHORT).show();
+        if (!dbKey.equals(result.first)) {
             View view = findViewById(R.id.snackbarView);
             Wash nearestWash = washes.get(result.first);
             if (nearestWash != null) {
@@ -182,6 +185,9 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         if (wash != null) {
             washes.put(key, wash);
         }
+        if (dbKey.equals(key)) {
+            this.wash = wash;
+        }
     }
 
     @Override
@@ -190,6 +196,9 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         String key = dataSnapshot.getKey();
         if (wash != null) {
             washes.put(key, wash);
+        }
+        if (dbKey.equals(key)) {
+            this.wash = wash;
         }
     }
 
@@ -214,10 +223,40 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("isTimer" ,isTimer);
+        if (isTimer) {
+            editor.putString("dbKey", dbKey);
+            editor.putLong("base", chronometer.getBase());
+        }
+        editor.apply();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        boolean timerRunning = preferences.getBoolean("isTimer", false);
+        if (timerRunning) {
+            isTimer = true;
+            String washKey = preferences.getString("dbKey", dbKey);
+            if (!washKey.equals(dbKey)) {
+                wash = washes.getOrDefault(washKey, wash);
+            }
+            chronometer.setBase(preferences.getLong("base", chronometer.getBase()));
+            chronometer.start();
+            chronometer.setCountDown(true);
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
         bundle.putParcelable(getString(R.string.wash_object_key), wash);
-        bundle.putString("dbKey", key);
+        bundle.putString("dbKey", dbKey);
         bundle.putInt("value", value);
         bundle.putBoolean("isTimer", isTimer);
         bundle.putLong("base", chronometer.getBase());
@@ -227,7 +266,7 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     protected void onRestoreInstanceState(Bundle bundle) {
         super.onRestoreInstanceState(bundle);
         wash = bundle.getParcelable(getString(R.string.wash_object_key));
-        key = bundle.getString("dbKey");
+        dbKey = bundle.getString("dbKey");
         value = bundle.getInt("value");
         isTimer = bundle.getBoolean("isTimer");
         if (value != -1) {
