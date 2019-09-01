@@ -154,9 +154,9 @@ public class WashActivity extends AppCompatActivity {
     }
 
     private void notLoggedUser() {
-       commentView.setVisibility(View.INVISIBLE);
-       ratingBar.setVisibility(View.INVISIBLE);
-       logIn.setVisibility(View.VISIBLE);
+        commentView.setVisibility(View.INVISIBLE);
+        ratingBar.setVisibility(View.INVISIBLE);
+        logIn.setVisibility(View.VISIBLE);
     }
 
     private void loggedUser() {

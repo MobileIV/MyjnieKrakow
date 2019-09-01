@@ -10,7 +10,6 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.Chronometer;
 import android.widget.NumberPicker;
-import android.widget.Toast;
 
 import com.example.kostek.myjniekrakow.models.Wash;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -154,12 +153,12 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         String nearestWash = null;
         float dist = 0;
         LatLng pos = new LatLng(location.getLatitude(), location.getLongitude());
-        for (Map.Entry<String, Wash> entry: washes.entrySet()) {
+        for (Map.Entry<String, Wash> entry : washes.entrySet()) {
             Wash wash = entry.getValue();
             String key = entry.getKey();
             float currDist = getDist(pos, new LatLng(wash.lat, wash.lng));
             if (nearestWash == null) {
-                nearestWash =  key;
+                nearestWash = key;
                 dist = currDist;
             } else if (dist > currDist) {
                 dist = currDist;
@@ -230,7 +229,7 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         super.onStop();
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(IS_TIMER ,isTimer);
+        editor.putBoolean(IS_TIMER, isTimer);
         if (isTimer) {
             editor.putString(WASH_KEY, dbKey);
             editor.putLong(BASE, chronometer.getBase());

@@ -75,5 +75,4 @@ public class LoginActivity extends AppCompatActivity {
     private void startApp() {
         startActivity(new Intent(this, MapsActivity.class));
     }
-
 }

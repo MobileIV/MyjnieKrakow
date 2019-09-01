@@ -25,7 +25,8 @@ public class LogoutFragment extends DialogFragment {
                     LogoutManager.logOut();
                     Toast.makeText(getContext(), onLogout, Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton("cancel", (dialog, e) -> {})
+                .setNegativeButton("cancel", (dialog, e) -> {
+                })
                 .create();
     }
 

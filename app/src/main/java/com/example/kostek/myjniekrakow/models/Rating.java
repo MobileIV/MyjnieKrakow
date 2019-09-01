@@ -7,8 +7,18 @@ import java.util.Date;
 
 public class Rating implements Parcelable {
 
-    public Long id;
+    public static final Creator<Rating> CREATOR = new Creator<Rating>() {
+        @Override
+        public Rating createFromParcel(Parcel in) {
+            return new Rating(in);
+        }
 
+        @Override
+        public Rating[] newArray(int size) {
+            return new Rating[size];
+        }
+    };
+    public Long id;
     public String comment;
     public Float rate;
     public Date date;
@@ -60,16 +70,4 @@ public class Rating implements Parcelable {
     public int describeContents() {
         return 0;
     }
-
-    public static final Creator<Rating> CREATOR = new Creator<Rating>() {
-        @Override
-        public Rating createFromParcel(Parcel in) {
-            return new Rating(in);
-        }
-
-        @Override
-        public Rating[] newArray(int size) {
-            return new Rating[size];
-        }
-    };
 }

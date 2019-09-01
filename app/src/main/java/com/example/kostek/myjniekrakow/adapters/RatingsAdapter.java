@@ -58,20 +58,6 @@ public class RatingsAdapter extends RecyclerView.Adapter<RatingsAdapter.RatingVi
         return ratings.size();
     }
 
-    public static class RatingViewHolder extends RecyclerView.ViewHolder {
-
-        public TextView dateView;
-        public RatingBar rateBar;
-        public TextView commentView;
-
-        public RatingViewHolder(View v) {
-            super(v);
-            rateBar = v.findViewById(R.id.wash_rating_bar);
-            dateView = v.findViewById(R.id.wash_date);
-            commentView = v.findViewById(R.id.wash_comment);
-        }
-    }
-
     public void setRatingsData(Collection<Rating> ratings) {
         this.ratings = new ArrayList<>(ratings);
         notifyDataSetChanged();
@@ -107,6 +93,20 @@ public class RatingsAdapter extends RecyclerView.Adapter<RatingsAdapter.RatingVi
     public enum SortOn {
         RATE,
         DATE
+    }
+
+    public static class RatingViewHolder extends RecyclerView.ViewHolder {
+
+        public TextView dateView;
+        public RatingBar rateBar;
+        public TextView commentView;
+
+        public RatingViewHolder(View v) {
+            super(v);
+            rateBar = v.findViewById(R.id.wash_rating_bar);
+            dateView = v.findViewById(R.id.wash_date);
+            commentView = v.findViewById(R.id.wash_comment);
+        }
     }
 
 }
