@@ -10,6 +10,8 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.Chronometer;
 import android.widget.NumberPicker;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.kostek.myjniekrakow.models.Wash;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -47,6 +49,7 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     private NumberPicker picker;
     private HashMap<String, Wash> washes;
     private MaterialButton button;
+    private TextView textView;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -82,6 +85,9 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         picker.setOnValueChangedListener((np, oldV, v) -> {
             value = v;
         });
+
+        textView = findViewById(R.id.textView);
+
         value = picker.getValue();
     }
 
@@ -112,6 +118,11 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
             }
             hideTimer();
         }
+        setText();
+    }
+
+    private void setText() {
+        textView.setText(String.format("Wash: %s", wash.name));
     }
 
     private void startTimer() {
@@ -189,6 +200,7 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         }
         if (dbKey.equals(key)) {
             this.wash = wash;
+            setText();
         }
     }
 
@@ -201,6 +213,7 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         }
         if (dbKey.equals(key)) {
             this.wash = wash;
+            setText();
         }
     }
 
@@ -217,6 +230,10 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         if (wash != null) {
             washes.put(key, wash);
         }
+        if (dbKey.equals(key)) {
+            this.wash = wash;
+            setText();
+        }
     }
 
     @Override
@@ -229,6 +246,7 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         super.onStop();
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
         editor.putBoolean(IS_TIMER, isTimer);
         if (isTimer) {
             editor.putString(WASH_KEY, dbKey);
@@ -243,14 +261,16 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         boolean timerRunning = preferences.getBoolean(IS_TIMER, false);
         if (timerRunning) {
-            isTimer = true;
-            String washKey = preferences.getString(WASH_KEY, dbKey);
-            if (!washKey.equals(dbKey)) {
+            long base = preferences.getLong(BASE, -1);
+            if (base >= SystemClock.elapsedRealtime()) {
+                isTimer = true;
+                String washKey = preferences.getString(WASH_KEY, dbKey);
                 wash = washes.getOrDefault(washKey, wash);
+                dbKey = washKey;
+                chronometer.setBase(base);
+                chronometer.start();
+                chronometer.setCountDown(true);
             }
-            chronometer.setBase(preferences.getLong(BASE, chronometer.getBase()));
-            chronometer.start();
-            chronometer.setCountDown(true);
         }
     }
 
