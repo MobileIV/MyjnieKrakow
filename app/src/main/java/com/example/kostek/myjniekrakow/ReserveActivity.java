@@ -42,6 +42,7 @@ import static com.example.kostek.myjniekrakow.utils.Constants.IS_TIMER;
 import static com.example.kostek.myjniekrakow.utils.Constants.VALUE;
 import static com.example.kostek.myjniekrakow.utils.Constants.WASH;
 import static com.example.kostek.myjniekrakow.utils.Constants.WASH_KEY;
+import static com.example.kostek.myjniekrakow.utils.Helpers.getNearestWashKeyDist;
 
 public class ReserveActivity extends AppCompatActivity implements ChildEventListener {
 
@@ -157,7 +158,7 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     }
 
     private void onLocationObtained(Location location) {
-        Pair<String, Float> result = getNearestWashKeyDist(location);
+        Pair<String, Float> result = getNearestWashKeyDist(location, washes);
         if (!dbKey.equals(result.first)) {
             View view = findViewById(R.id.snackbarView);
             Wash nearestWash = washes.get(result.first);
@@ -179,37 +180,6 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
                 }).show();
             }
         }
-    }
-
-    private Pair<String, Float> getNearestWashKeyDist(Location location) {
-        String nearestWash = null;
-        float dist = 0;
-        LatLng pos = new LatLng(location.getLatitude(), location.getLongitude());
-        for (Map.Entry<String, Wash> entry : washes.entrySet()) {
-            Wash wash = entry.getValue();
-            String key = entry.getKey();
-            float currDist = getDist(pos, new LatLng(wash.lat, wash.lng));
-            if (nearestWash == null) {
-                nearestWash = key;
-                dist = currDist;
-            } else if (dist > currDist) {
-                dist = currDist;
-                nearestWash = key;
-            }
-        }
-        return new Pair<>(nearestWash, dist);
-    }
-
-    private float getDist(LatLng pos1, LatLng pos2) {
-        float[] results = new float[1];
-        Location.distanceBetween(
-                pos1.latitude,
-                pos1.longitude,
-                pos2.latitude,
-                pos2.longitude,
-                results
-        );
-        return results[0];
     }
 
     @Override

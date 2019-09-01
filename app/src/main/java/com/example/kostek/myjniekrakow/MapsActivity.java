@@ -17,6 +17,11 @@ import com.example.kostek.myjniekrakow.fragments.InfoViewFragment;
 import com.example.kostek.myjniekrakow.fragments.LogoutFragment;
 import com.example.kostek.myjniekrakow.models.Wash;
 import com.example.kostek.myjniekrakow.utils.BitmapCache;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -42,6 +47,7 @@ import androidx.databinding.ObservableArrayMap;
 
 import static com.example.kostek.myjniekrakow.utils.Constants.WASH;
 import static com.example.kostek.myjniekrakow.utils.Constants.WASH_KEY;
+import static com.example.kostek.myjniekrakow.utils.Helpers.getNearestWashKeyDist;
 
 public class MapsActivity extends AppCompatActivity
         implements
@@ -51,14 +57,20 @@ public class MapsActivity extends AppCompatActivity
 
     private static final String LOG_TAG = MapsActivity.class.getSimpleName();
     private static final Integer PERMISSION_CODE = 1;
+
     private final InfoWindow.MarkerSpecification specs =
             new InfoWindow.MarkerSpecification(0, 118);
+
     private final HashMap<String, Marker> markers = new HashMap<>();
     private final ObservableArrayMap<String, Wash> washes = new ObservableArrayMap<>();
+
+    private String closestWash = null;
     private GoogleMap mMap;
     private InfoWindowManager windowManager;
     private BitmapCache bitmapCache;
     private boolean mPermissionDenied = false;
+    private FusedLocationProviderClient locationClient;
+    private LocationCallback callback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +86,15 @@ public class MapsActivity extends AppCompatActivity
         bitmapCache = new BitmapCache(20, this);
 
         openScanner.setOnClickListener(v -> {
-            //
+            if (closestWash == null) {
+                Toast.makeText(
+                        this, "Could not find any washes", Toast.LENGTH_SHORT
+                ).show();
+            }
+            Intent intent = new Intent(this, ReserveActivity.class);
+            intent.putExtra(WASH, washes.get(closestWash));
+            intent.putExtra(WASH_KEY, closestWash);
+            startActivity(intent);
         });
 
         dbSetup();
@@ -130,6 +150,21 @@ public class MapsActivity extends AppCompatActivity
                     Toast.LENGTH_SHORT).show();
             this.finish();
         }
+        locationClient = LocationServices.getFusedLocationProviderClient(this);
+        LocationRequest request = LocationRequest.create();
+        request.setInterval(60 * 1000);
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        callback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                closestWash = getNearestWashKeyDist(locationResult.getLastLocation(), washes).first;
+            }
+        };
+        locationClient.requestLocationUpdates(request, callback, null);
     }
 
     @Override
@@ -168,6 +203,14 @@ public class MapsActivity extends AppCompatActivity
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (locationClient != null) {
+            locationClient.removeLocationUpdates(callback);
+        }
     }
 
     private class ChildListener implements ChildEventListener {
