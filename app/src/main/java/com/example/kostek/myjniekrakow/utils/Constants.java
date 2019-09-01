@@ -13,4 +13,7 @@ public class Constants {
     public static final String IS_TIMER = "is_timer";
     public static final String BASE = "base";
     public static final String VALUE = "value";
+
+    // notification
+    public static final int NOTIFICATION = 1337;
 }

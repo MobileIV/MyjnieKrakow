@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kostek.myjniekrakow.models.Wash;
+import com.example.kostek.myjniekrakow.workers.NotificationWorker;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
@@ -27,10 +28,14 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import static com.example.kostek.myjniekrakow.utils.Constants.BASE;
 import static com.example.kostek.myjniekrakow.utils.Constants.IS_TIMER;
@@ -62,7 +67,6 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
             wash = extras.getParcelable(WASH);
             dbKey = extras.getString(WASH_KEY);
         }
-
         setContentView(R.layout.activity_reserve);
 
         washes = new HashMap<>();
@@ -122,15 +126,28 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
     }
 
     private void setText() {
-        textView.setText(String.format("Wash: %s", wash.name));
+        if (wash != null) {
+            textView.setText(String.format("Wash: %s", wash.name));
+        }
     }
 
     private void startTimer() {
         isTimer = true;
+        long base = SystemClock.elapsedRealtime() + 60 * 1000 * value;
         showTimer();
         chronometer.setCountDown(true);
-        chronometer.setBase(SystemClock.elapsedRealtime() + 60 * 1000 * value);
+        chronometer.setBase(base);
         chronometer.start();
+        Data data = new Data
+                .Builder()
+                .putString(WASH_KEY, dbKey)
+                .build();
+        OneTimeWorkRequest request
+                = new OneTimeWorkRequest.Builder(NotificationWorker.class)
+                .setInitialDelay(value, TimeUnit.MINUTES)
+                .setInputData(data)
+                .build();
+        WorkManager.getInstance(this).enqueue(request);
     }
 
     private void dbSetup() {
@@ -150,6 +167,10 @@ public class ReserveActivity extends AppCompatActivity implements ChildEventList
                         "Closer wash found at address " + nearestWash.address,
                         Snackbar.LENGTH_LONG
                 ).setAction("Change Wash", e -> {
+                    if (isTimer) {
+                        Toast.makeText(this, "Reservation already running", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                     Intent intent = new Intent(this, ReserveActivity.class);
                     intent.putExtra(WASH, nearestWash);
                     intent.putExtra(WASH_KEY, result.first);

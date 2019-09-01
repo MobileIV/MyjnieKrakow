@@ -39,9 +39,6 @@
         </activity>
         <activity
             android:name=".WashActivity"/>
-        <activity android:name=".ScannerActivity" />
-
-        <activity android:name=".PayingActivity" />
 
         <activity android:name=".LoginActivity">
             <intent-filter>
@@ -50,8 +47,6 @@
         </intent-filter>
         </activity>
         <activity android:name=".ReserveActivity" />
-
-        <service android:name=".services.TimerService" />
     </application>
 
 </manifest>
